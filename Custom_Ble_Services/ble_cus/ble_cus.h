@@ -29,6 +29,7 @@ NRF_SDH_BLE_OBSERVER(_name ## _obs,                                             
 #define POTENTIO_LEVEL_CHAR_UUID   0x1002
 #define LEDS_STATES_CHAR_UUID      0x1003
 #define GYRO_STATES_CHAR_UUID      0x1004
+#define ACCR_STATES_CHAR_UUID      0x1005
 
 /**@brief Custom service event types.
  *
@@ -43,6 +44,9 @@ typedef enum
 
     BLE_GYRO_LEVEL_CHAR_NOTIFICATIONS_ENABLED,
     BLE_GYRO_LEVEL_CHAR_NOTIFICATIONS_DISABLED,
+    
+    BLE_ACCR_LEVEL_CHAR_NOTIFICATIONS_ENABLED,
+    BLE_ACCR_LEVEL_CHAR_NOTIFICATIONS_DISABLED,
 
     BLE_LEDS_STATES_CHAR_EVT_COMMAND_RX 
 
@@ -87,7 +91,8 @@ typedef struct
    
     ble_srv_cccd_security_mode_t  buttons_states_char_attr_md;    /**< Used to set the security mode of the cccd for the buttons char. */
     ble_srv_cccd_security_mode_t  potentio_level_char_attr_md;    /**< Used to set the security mode of the cccd for the potentio char. */
-    ble_srv_cccd_security_mode_t  gyro_level_char_attr_md;    /**< Used to set the security mode of the cccd for the gyro char. */
+    ble_srv_cccd_security_mode_t  gyro_level_char_attr_md;        /**< Used to set the security mode of the cccd for the gyro char. */
+    ble_srv_cccd_security_mode_t  accr_level_char_attr_md;        /**< Used to set the security mode of the cccd for the accr char. */
 
 } ble_cus_init_t;
 
@@ -103,7 +108,9 @@ struct ble_cus_s
     ble_gatts_char_handles_t      buttons_states_char_handles;    /**< Handles related to the buttons states characteristic. */
     ble_gatts_char_handles_t      leds_states_char_handles;       /**< Handles related to the leds states characteristic. */
     ble_gatts_char_handles_t      potentio_level_char_handles;    /**< Handles related to the potentio level characteristic. */
-    ble_gatts_char_handles_t      gyro_level_char_handles;    /**< Handles related to the potentio level characteristic. */
+    ble_gatts_char_handles_t      gyro_level_char_handles;        /**< Handles related to the potentio level characteristic. */
+    ble_gatts_char_handles_t      accr_level_char_handles;        /**< Handles related to the potentio level characteristic. */
+
       
     uint16_t                      conn_handle;                    /**< Handle of the current connection (as provided by the BLE stack, is BLE_CONN_HANDLE_INVALID if not in a connection). */
     uint8_t                       uuid_type;                      /**< Holds the service uuid type. */
@@ -149,7 +156,7 @@ uint32_t ble_cus_potentio_level_update(ble_cus_t * p_cus, uint8_t  * p_potentio_
 uint32_t ble_cus_buttons_states_update(ble_cus_t * p_cus, uint8_t  * p_buttons_states, uint16_t conn_handle);
 
 
-/**@brief Function for updating the buttons states on the buttons ble characteristic.
+/**@brief Function for updating the Gyro states on the Gyro ble characteristic.
  *
  * @param[in]   p_cus             Custom service structure.
  * @param[in]   gyroX             Gyro X state.
@@ -159,5 +166,17 @@ uint32_t ble_cus_buttons_states_update(ble_cus_t * p_cus, uint8_t  * p_buttons_s
  *
  * @return      NRF_SUCCESS on success, otherwise an error code.
  */
-//uint32_t ble_cus_gyro_states_update(ble_cus_t * p_cus, uint8_t  * p_gyro_states, uint16_t conn_handle);
 uint32_t ble_cus_gyro_states_update(ble_cus_t *p_cus, int16_t gyroX, int16_t gyroY, int16_t gyroZ, uint16_t conn_handle);
+
+
+/**@brief Function for updating the Accr states on the Accr ble characteristic.
+ *
+ * @param[in]   p_cus             Custom service structure.
+ * @param[in]   accrX             Accr X state.
+ * @param[in]   accrY             Accr Y state.
+ * @param[in]   accrZ             Accr Z state.
+ * @param[in]   conn_handle       Connection handle.
+ *
+ * @return      NRF_SUCCESS on success, otherwise an error code.
+ */
+uint32_t ble_cus_accr_states_update(ble_cus_t *p_cus, int16_t accrX, int16_t accrY, int16_t accrZ, uint16_t conn_handle);

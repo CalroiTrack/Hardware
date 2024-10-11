@@ -14,6 +14,8 @@
   <ProjectSessionItem path="ble_app_template_pca10056_s140;ble_app_template_pca10056_s140;Application"/>
   <ProjectSessionItem path="ble_app_template_pca10056_s140;ble_app_template_pca10056_s140;Board Definition"/>
   <ProjectSessionItem path="ble_app_template_pca10056_s140;ble_app_template_pca10056_s140;Custom_Ble_Services"/>
+  <ProjectSessionItem path="ble_app_template_pca10056_s140;ble_app_template_pca10056_s140;MPU6050"/>
+  <ProjectSessionItem path="ble_app_template_pca10056_s140;ble_app_template_pca10056_s140;None"/>
   <ProjectSessionItem path="ble_app_template_pca10056_s140;ble_app_template_pca10056_s140;nRF_BLE"/>
   <ProjectSessionItem path="ble_app_template_pca10056_s140;ble_app_template_pca10056_s140;nRF_BLE_Services"/>
   <ProjectSessionItem path="ble_app_template_pca10056_s140;ble_app_template_pca10056_s140;nRF_Drivers"/>
@@ -41,9 +43,11 @@
   <Watches active="0" update="Never"/>
  </Watch4>
  <Files>
-  <SessionOpenFile windowGroup="DockEditLeft" x="3" y="794" useTextEdit="1" path="../../../main.c" left="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="39" y="273" useTextEdit="1" openedFrom="/Users/jaeuk/Project/nRF_SDK/examples/Capstone/CalroiTrack/main.c" path="../../../Custom_Ble_Services/ble_cus/ble_cus.c" left="0" top="228" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="124" y="103" useTextEdit="1" openedFrom="/Users/jaeuk/Project/nRF_SDK/examples/Capstone/CalroiTrack/Custom_Ble_Services/ble_cus/ble_cus.c" path="../../../Custom_Ble_Services/ble_cus/ble_cus.h" left="0" selected="1" top="15" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="29" y="264" useTextEdit="1" path="../../../main.c" left="0" selected="1" top="168" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="28" y="288" useTextEdit="1" openedFrom="/Users/jaeuk/Project/nRF_SDK/examples/Capstone/CalroiTrack/main.c" path="../../../Custom_Ble_Services/ble_cus/ble_cus.c" left="0" top="235" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="21" y="156" useTextEdit="1" openedFrom="/Users/jaeuk/Project/nRF_SDK/examples/Capstone/CalroiTrack/Custom_Ble_Services/ble_cus/ble_cus.c" path="../../../Custom_Ble_Services/ble_cus/ble_cus.h" left="0" top="113" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="14" y="5" useTextEdit="1" path="../../../mpu6050/mpu6050.c" left="0" top="202" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="83" y="20" useTextEdit="1" openedFrom="/Users/jaeuk/Project/nRF_SDK/examples/Capstone/CalroiTrack/mpu6050/mpu6050.c" path="../../../mpu6050/mpu6050.h" left="0" top="0" codecName="Default"/>
  </Files>
  <EMStudioWindow activeProject="ble_app_template_pca10056_s140" fileDialogDefaultFilter="*.c;*.h" autoConnectTarget="J-Link" buildConfiguration="Debug" sessionSettings="" debugSearchFileMap="" fileDialogInitialDirectory="/Users/jaeuk/Project/nRF_SDK/modules/nrfx/drivers/src" debugSearchPath="" autoConnectCapabilities="3711"/>
 </session>

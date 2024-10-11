@@ -43,12 +43,23 @@ static void on_write(ble_cus_t *p_cus, ble_evt_t const *p_ble_evt) {
     p_cus->evt_handler(p_cus, &evt);
   }
 
-  // writing to the potentiometer level characteristic (cccd)
+  // writing to the gyro level characteristic (cccd)
   else if (p_evt_write->handle == p_cus->gyro_level_char_handles.cccd_handle) {
     if (ble_srv_is_notification_enabled(p_evt_write->data)) {
       evt.evt_type = BLE_GYRO_LEVEL_CHAR_NOTIFICATIONS_ENABLED;
     } else {
       evt.evt_type = BLE_GYRO_LEVEL_CHAR_NOTIFICATIONS_DISABLED;
+    }
+
+    p_cus->evt_handler(p_cus, &evt);
+  }
+
+  // writing to the accr level characteristic (cccd)
+  else if (p_evt_write->handle == p_cus->accr_level_char_handles.cccd_handle) {
+    if (ble_srv_is_notification_enabled(p_evt_write->data)) {
+      evt.evt_type = BLE_ACCR_LEVEL_CHAR_NOTIFICATIONS_ENABLED;
+    } else {
+      evt.evt_type = BLE_ACCR_LEVEL_CHAR_NOTIFICATIONS_DISABLED;
     }
 
     p_cus->evt_handler(p_cus, &evt);
@@ -110,6 +121,30 @@ uint32_t ble_cus_init(ble_cus_t *p_cus, const ble_cus_init_t *p_cus_init) {
   }
 
   /* Adding the service characteristics */
+  // Add the gryo characteristic.
+
+  uint8_t accr_char_init_value[6] ={0};
+
+  memset(&add_char_params, 0, sizeof(add_char_params));
+  add_char_params.uuid = ACCR_STATES_CHAR_UUID;
+  add_char_params.uuid_type = p_cus->uuid_type;
+
+  add_char_params.init_len = 6; // (in bytes)
+  add_char_params.max_len = 6;
+  add_char_params.p_init_value = accr_char_init_value;
+
+  add_char_params.char_props.read = 1;
+  add_char_params.char_props.notify = 1;
+
+  add_char_params.read_access = SEC_OPEN;
+  add_char_params.cccd_write_access = SEC_OPEN;
+
+  err_code = characteristic_add(p_cus->service_handle,
+      &add_char_params,
+      &p_cus->accr_level_char_handles);
+  if (err_code != NRF_SUCCESS) {
+    return err_code;
+  }
 
   // Add the gryo characteristic.
 
@@ -260,16 +295,17 @@ uint32_t ble_cus_buttons_states_update(ble_cus_t *p_cus, uint8_t *p_buttons_stat
   return sd_ble_gatts_hvx(conn_handle, &params);
 }
 
-/**@brief Function for updating the gyro states on the buttons ble characteristic.
+/**@brief Function for updating the Gyro states on the Gyro ble characteristic.
  *
  * @param[in]   p_cus             Custom service structure.
- * @param[in]   p_gyro_states     Gyro states.
+ * @param[in]   gyroX             Gyro X state.
+ * @param[in]   gyroY             Gyro Y state.
+ * @param[in]   gyroZ             Gyro Z state.
  * @param[in]   conn_handle       Connection handle.
  *
  * @return      NRF_SUCCESS on success, otherwise an error code.
  */
 
- 
 uint32_t ble_cus_gyro_states_update(ble_cus_t *p_cus, int16_t gyroX, int16_t gyroY, int16_t gyroZ, uint16_t conn_handle) {
   uint8_t gyro_level[6] = {0};
 
@@ -287,6 +323,40 @@ uint32_t ble_cus_gyro_states_update(ble_cus_t *p_cus, int16_t gyroX, int16_t gyr
   params.handle = p_cus->gyro_level_char_handles.value_handle;
   params.offset = 0;
   params.p_data = gyro_level;
+  params.p_len = &len;
+
+  return sd_ble_gatts_hvx(conn_handle, &params);
+}
+
+
+/**@brief Function for updating the Accr states on the Accr ble characteristic.
+ *
+ * @param[in]   p_cus             Custom service structure.
+ * @param[in]   accrX             Accr X state.
+ * @param[in]   accrY             Accr Y state.
+ * @param[in]   accrZ             Accr Z state.
+ * @param[in]   conn_handle       Connection handle.
+ *
+ * @return      NRF_SUCCESS on success, otherwise an error code.
+ */
+
+uint32_t ble_cus_accr_states_update(ble_cus_t *p_cus, int16_t accrX, int16_t accrY, int16_t accrZ, uint16_t conn_handle) {
+  uint8_t accr_level[6] = {0};
+
+  accr_level[0] = accrZ & 0xFF;
+  accr_level[1] = accrZ >> 8;
+  accr_level[2] = accrY & 0xFF;
+  accr_level[3] = accrY >> 8;
+  accr_level[4] = accrX & 0xFF;
+  accr_level[5] = accrX >> 8;
+
+  ble_gatts_hvx_params_t params;
+  uint16_t len = sizeof(accr_level);
+  memset(&params, 0, sizeof(params));
+  params.type = BLE_GATT_HVX_NOTIFICATION;
+  params.handle = p_cus->accr_level_char_handles.value_handle;
+  params.offset = 0;
+  params.p_data = accr_level;
   params.p_len = &len;
 
   return sd_ble_gatts_hvx(conn_handle, &params);

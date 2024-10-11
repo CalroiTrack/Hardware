@@ -117,6 +117,7 @@
 #define BATTERY_TIMER_INTERVAL APP_TIMER_TICKS(60000) /**< Battery timer interval (60000 ms). */
 #define SAADC_TIMER_INTERVAL APP_TIMER_TICKS(200)     /**< Saadc sampling timer interval (200 ms). */
 #define GYRO_TIMER_INTERVAL APP_TIMER_TICKS(200)     /**< Gyro sampling timer interval (200 ms). */
+#define ACCR_TIMER_INTERVAL APP_TIMER_TICKS(200)     /**< Gyro sampling timer interval (200 ms). */
 
 NRF_BLE_GATT_DEF(m_gatt);           /**< GATT module instance. */
 NRF_BLE_QWR_DEF(m_qwr);             /**< Context for the Queued Write module.*/
@@ -124,9 +125,10 @@ BLE_ADVERTISING_DEF(m_advertising); /**< Advertising module instance. */
 BLE_CUS_DEF(m_cus);
 BLE_BAS_DEF(m_bas);
 
-APP_TIMER_DEF(m_saadc_timer_id);   /**< Potentio timer. */
-APP_TIMER_DEF(m_battery_timer_id); /**< Battery timer. */
-APP_TIMER_DEF(m_gyro_timer_id);
+APP_TIMER_DEF(m_saadc_timer_id);    /**< Potentio timer. */
+APP_TIMER_DEF(m_battery_timer_id);  /**< Battery timer. */
+APP_TIMER_DEF(m_gyro_timer_id);     /**< Gyro timer */
+APP_TIMER_DEF(m_accr_timer_id);     /**< Accr timer */
 
 static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID; /**< Handle of the current connection. */
 
@@ -234,8 +236,10 @@ static void battery_timer_timeout_handler(void *p_context) {
   battery_level_update();
 }
 
-static int16_t GyroValue[3] = {0};
+static volatile int16_t GyroValue[3] = {0};
 
+/**@brief Function for updating the Gryo Level characteristic in Gryo Service.
+ */
 static void gyro_level_update(void) {
   if (MPU6050_ReadGyro(&GyroValue[0], &GyroValue[1], &GyroValue[2]) == true) {
     ret_code_t err_code;
@@ -252,9 +256,48 @@ static void gyro_level_update(void) {
   }
 }
 
+/**@brief Function for handling the Gyro measurement timer timeout.
+ *
+ * @details This function will be called each time the battery level measurement timer expires.
+ *
+ * @param[in] p_context  Pointer used for passing some arbitrary information (context) from the
+ *                       app_start_timer() call to the timeout handler.
+ */
 static void gyro_timer_timeout_handler(void *p_context) {
   UNUSED_PARAMETER(p_context);
   gyro_level_update();
+}
+
+static volatile int16_t AccrValue[3] = {0};
+
+/**@brief Function for updating the Accr Level characteristic in Accr Service.
+ */
+static void accr_level_update(void) {
+  if (MPU6050_ReadAcc(&AccrValue[0], &AccrValue[1], &AccrValue[2]) == true) {
+    ret_code_t err_code;
+    
+    err_code = ble_cus_accr_states_update(&m_cus, AccrValue[0], AccrValue[1], AccrValue[2], m_conn_handle);
+    if (err_code != NRF_SUCCESS &&
+        err_code != BLE_ERROR_INVALID_CONN_HANDLE &&
+        err_code != NRF_ERROR_INVALID_STATE &&
+        err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING) {
+      APP_ERROR_CHECK(err_code);
+    }
+  } else {
+    NRF_LOG_INFO("Reading Gyro Values Failed!");
+  }
+}
+
+/**@brief Function for handling the Gyro measurement timer timeout.
+ *
+ * @details This function will be called each time the battery level measurement timer expires.
+ *
+ * @param[in] p_context  Pointer used for passing some arbitrary information (context) from the
+ *                       app_start_timer() call to the timeout handler.
+ */
+static void accr_timer_timeout_handler(void *p_context) {
+  UNUSED_PARAMETER(p_context);
+  accr_level_update();
 }
 
 /**@brief Function for the Timer initialization.
@@ -282,6 +325,12 @@ static void timers_init(void) {
   err_code = app_timer_create(&m_gyro_timer_id,
       APP_TIMER_MODE_REPEATED,
       gyro_timer_timeout_handler);
+  APP_ERROR_CHECK(err_code);
+
+  // Create Accr timer.
+  err_code = app_timer_create(&m_accr_timer_id,
+      APP_TIMER_MODE_REPEATED,
+      accr_timer_timeout_handler);
   APP_ERROR_CHECK(err_code);
 }
 
@@ -419,6 +468,16 @@ static void cus_evt_handler(ble_cus_t *p_cus, ble_cus_evt_t *p_evt) {
 
   } break;
 
+  case BLE_ACCR_LEVEL_CHAR_NOTIFICATIONS_ENABLED: {
+    NRF_LOG_INFO("accr level char notifications are enabled.");
+
+  } break;
+
+  case BLE_ACCR_LEVEL_CHAR_NOTIFICATIONS_DISABLED: {
+    NRF_LOG_INFO("accr level char notifications are disabled.");
+
+  } break;
+
   default:
     break;
   }
@@ -515,6 +574,9 @@ static void application_timers_start(void) {
   APP_ERROR_CHECK(err_code);
 
   err_code = app_timer_start(m_gyro_timer_id, GYRO_TIMER_INTERVAL, NULL);
+  APP_ERROR_CHECK(err_code);
+
+  err_code = app_timer_start(m_accr_timer_id, ACCR_TIMER_INTERVAL, NULL);
   APP_ERROR_CHECK(err_code);
 }
 
